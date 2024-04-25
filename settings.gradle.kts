@@ -1,1 +1,1 @@
-rootProject.name = "wms-back"
+rootProject.name = "control-tower"
