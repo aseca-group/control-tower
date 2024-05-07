@@ -1,5 +1,5 @@
-package com.example.article.dao.`interface`
-import com.example.article.model.*
+package com.example.modules.article.dao.`interface`
+import com.example.modules.article.model.*
 
 interface DAOFacade {
     suspend fun allArticles(): List<Article>

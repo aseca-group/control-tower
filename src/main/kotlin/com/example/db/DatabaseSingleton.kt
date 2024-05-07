@@ -1,6 +1,6 @@
 package com.example.db
 
-import com.example.article.model.*
+import com.example.modules.article.model.*
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.*

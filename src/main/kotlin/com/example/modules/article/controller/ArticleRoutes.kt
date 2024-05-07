@@ -1,8 +1,8 @@
-package com.example.article.controller
+package com.example.modules.article.controller
 
 
-import com.example.article.dao.dao
-import com.example.article.model.Article
+import com.example.modules.article.dao.dao
+import com.example.modules.article.model.Article
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*

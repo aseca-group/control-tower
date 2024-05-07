@@ -1,8 +1,8 @@
-package com.example.article.dao
+package com.example.modules.article.dao
 
 import com.example.db.DatabaseSingleton.dbQuery
-import com.example.article.dao.`interface`.DAOFacade
-import com.example.article.model.*
+import com.example.modules.article.dao.`interface`.DAOFacade
+import com.example.modules.article.model.*
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq

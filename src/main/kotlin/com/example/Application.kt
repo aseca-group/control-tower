@@ -1,9 +1,9 @@
 package com.example
 
-import com.example.article.controller.article
+import com.example.modules.article.controller.article
 import com.example.db.DatabaseSingleton
-import com.example.plugins.*
-import io.ktor.serialization.jackson.*
+import com.example.modules.order.controller.order
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
@@ -15,10 +15,11 @@ fun main(args: Array<String>) {
 fun Application.module() {
     DatabaseSingleton.init()
     install(ContentNegotiation) {
-        jackson()
+        json()
     }
     install(Routing) {
         article()
+        order()
     }
 
 }

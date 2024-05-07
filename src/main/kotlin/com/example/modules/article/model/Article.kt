@@ -1,4 +1,4 @@
-package com.example.article.model
+package com.example.modules.article.model
 
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
