@@ -6,7 +6,6 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
-import
 
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.javatime.CurrentDateTime
