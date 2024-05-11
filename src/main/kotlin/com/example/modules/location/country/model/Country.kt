@@ -1,4 +1,4 @@
-package com.example.modules.location.country
+package com.example.modules.location.country.model
 
 import org.jetbrains.exposed.sql.Table
 
