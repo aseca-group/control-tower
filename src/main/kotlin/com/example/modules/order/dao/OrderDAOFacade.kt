@@ -1,6 +1,5 @@
 package com.example.modules.order.dao
 
-import com.example.modules.article.model.Article
 import com.example.modules.order.model.Order
 
 interface OrderDAOFacade {
