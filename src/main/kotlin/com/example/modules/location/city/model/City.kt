@@ -1,8 +1,10 @@
 package com.example.modules.location.city.model
 
 import com.example.modules.location.country.model.Countries
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
+@Serializable
 class City(
     val id: Int,
     val countryId: Int,
