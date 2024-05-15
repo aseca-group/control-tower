@@ -39,5 +39,7 @@ dependencies {
     implementation("com.h2database:h2:$h2_version")
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-serialization-jackson:$ktor_version")
-    implementation ("org.jetbrains.kotlinx:kotlinx-datetime:$kotlin_version")
+    // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-datetime
+    runtimeOnly("org.jetbrains.kotlinx:kotlinx-datetime:$ktor_version")
+
 }

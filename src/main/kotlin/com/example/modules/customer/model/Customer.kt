@@ -1,6 +1,5 @@
-package com.example.modules.user
+package com.example.modules.customer.model
 
-import com.example.modules.cart.Cart
 import com.example.modules.cart.Carts
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table

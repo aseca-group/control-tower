@@ -2,6 +2,7 @@ package com.example
 
 import com.example.modules.article.controller.article
 import com.example.db.DatabaseSingleton
+import com.example.modules.address.controller.address
 import com.example.modules.order.controller.order
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -20,6 +21,7 @@ fun Application.module() {
     install(Routing) {
         article()
         order()
+        address()
     }
 
 }

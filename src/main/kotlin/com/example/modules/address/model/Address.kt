@@ -1,13 +1,12 @@
-package com.example.modules.location.address.model
+package com.example.modules.address.model
 
-import com.example.modules.location.city.model.Cities
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
 @Serializable
 class Address(
     val id: Int,
-    val cityId: Int,
+    val city: String,
     val road: String,
     val number: Int,
 ) {
@@ -15,7 +14,7 @@ class Address(
 
 object Addresses : Table() {
     val id = integer("id").autoIncrement()
-    val cityId = integer("cityId") references Cities.id
+    val city = varchar("city", 50)
     val road = varchar("road", 50)
     val number = integer("number")
 

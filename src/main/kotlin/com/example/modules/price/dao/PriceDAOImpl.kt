@@ -10,7 +10,7 @@ class PriceDAOImpl : PriceDAOFacade {
         id = row[Prices.id],
         value = row[Prices.value],
         isUnit = row[Prices.isUnit],
-        qty = row[Prices.qty],
+        qty = row[Prices.weight],
     )
 
     override suspend fun allPrices(): List<Price> {
@@ -28,7 +28,7 @@ class PriceDAOImpl : PriceDAOFacade {
         val insertStatement = Prices.insert {
             it[value] = value
             it[isUnit] = isUnit
-            it[qty] = qty
+            it[weight] = weight
         }
         return insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToPrice)
     }
@@ -37,7 +37,7 @@ class PriceDAOImpl : PriceDAOFacade {
         return Prices.update({ Prices.id eq price.id }) {
             it[value] = value
             it[isUnit] = isUnit
-            it[qty] = qty
+            it[weight] = weight
         } > 0
     }
 

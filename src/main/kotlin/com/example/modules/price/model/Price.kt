@@ -16,7 +16,7 @@ object Prices: Table(){
     val id = integer("id").autoIncrement()
     val value = double("value")
     val isUnit = bool("is_unit")
-    val qty = double("qty").nullable()
+    val weight = double("weight").nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

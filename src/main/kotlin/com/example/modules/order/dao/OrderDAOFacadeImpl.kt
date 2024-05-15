@@ -17,10 +17,10 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
 
     private fun resultRowToOrder(row: ResultRow) = Order (
         id = row[Orders.id].value,
-        productsId = OrderProducts.id,
-        addressId = row[Orders.address].id,
-        customerId = row[Orders.customer].id,
-        cardId = row[Orders.card].id,
+//        productsId = OrderProducts.id, //TODO: Many to many relationship
+        addressId = row[Orders.addressId],
+        customerId = row[Orders.customerId],
+        cardId = row[Orders.cardId],
         total = row[Orders.total],
         date = row[Orders.date]
     )
@@ -37,9 +37,9 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
 
     override suspend fun addNewOrder(order: Order): Order? = dbQuery{
         val insertStatement = Orders.insert { it ->
-            it[Orders.address] = AddressEntity[order.addressId]
-            it[Orders.card] = CardEntity[order.cardId]
-            it[Orders.customer] = CustomerEntity[order.customerId]
+            it[Orders.addressId] = order.addressId
+            it[Orders.cardId] = order.cardId
+            it[Orders.customerId] = order.customerId
             it[Orders.date] = order.date
             it[Orders.total] = order.total
         }
@@ -48,9 +48,9 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
 
     override suspend fun editOrder(order: Order): Boolean  = dbQuery {
         Orders.update({ Orders.id eq id }) {
-            it[Orders.address] = AddressEntity[order.addressId]
-            it[Orders.card] = CardEntity[order.cardId]
-            it[Orders.customer] = CustomerEntity[order.customerId]
+            it[Orders.addressId] = order.addressId
+            it[Orders.cardId] = order.cardId
+            it[Orders.customerId] = order.customerId
             it[Orders.date] = order.date
             it[Orders.total] = order.total
         } > 0
