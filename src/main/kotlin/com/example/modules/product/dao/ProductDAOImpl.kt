@@ -7,9 +7,8 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class ProductDAOImpl : ProductDAOFacade {
     private fun resultRowToProduct(resultRow: ResultRow) = Product (
-        id = resultRow[Products.id],
-        priceId = resultRow[Products.priceId],
-        costId = resultRow[Products.costId],
+        id = resultRow[Products.id].value,
+        price = resultRow[Products.price],
         name = resultRow[Products.name],
     )
 
@@ -26,8 +25,7 @@ class ProductDAOImpl : ProductDAOFacade {
 
     override suspend fun addNewProduct(product: Product): Product? {
         val insertStatement = Products.insert {
-            it[priceId] = priceId
-            it[costId] = product.costId
+            it[price] = price
             it[name] = product.name
         }
         return insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToProduct)
@@ -35,8 +33,7 @@ class ProductDAOImpl : ProductDAOFacade {
 
     override suspend fun editProduct(product: Product): Boolean {
         return Products.update({ Products.id eq product.id}) {
-            it[priceId] = priceId
-            it[costId] = costId
+            it[price] = price
             it[name] = name
         } > 0
     }

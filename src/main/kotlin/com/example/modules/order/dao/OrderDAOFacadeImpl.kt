@@ -5,22 +5,20 @@ import com.example.db.DatabaseSingleton.dbQuery
 import com.example.modules.order.model.Order
 import com.example.modules.order.model.Orders
 import com.example.modules.order.model.Orders.id
-import org.jetbrains.exposed.sql.ResultRow
+import com.example.modules.order.model.OrdersProducts
+import com.example.modules.order.model.OrdersProducts.productId
+import com.example.modules.order.model.OrdersProducts.qty
+import com.example.modules.order.model.ProductQty
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.update
 
 class OrderDAOFacadeImpl : OrderDAOFacade {
 
     private fun resultRowToOrder(row: ResultRow) = Order (
         id = row[Orders.id].value,
-//        productsId = OrderProducts.id, //TODO: Many to many relationship
+        productsId = OrdersProducts.select { OrdersProducts.orderId eq id }.map { ProductQty (it[productId].value, it[qty]) }, //Select all entries that have our order id and get the product id and quantity.
         addressId = row[Orders.addressId],
         customerId = row[Orders.customerId],
-        cardId = row[Orders.cardId],
         total = row[Orders.total],
         date = row[Orders.date]
     )
@@ -38,7 +36,6 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
     override suspend fun addNewOrder(order: Order): Order? = dbQuery{
         val insertStatement = Orders.insert { it ->
             it[Orders.addressId] = order.addressId
-            it[Orders.cardId] = order.cardId
             it[Orders.customerId] = order.customerId
             it[Orders.date] = order.date
             it[Orders.total] = order.total
@@ -49,7 +46,6 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
     override suspend fun editOrder(order: Order): Boolean  = dbQuery {
         Orders.update({ Orders.id eq id }) {
             it[Orders.addressId] = order.addressId
-            it[Orders.cardId] = order.cardId
             it[Orders.customerId] = order.customerId
             it[Orders.date] = order.date
             it[Orders.total] = order.total
