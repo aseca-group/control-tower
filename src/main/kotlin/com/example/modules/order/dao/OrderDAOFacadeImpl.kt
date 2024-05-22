@@ -2,6 +2,7 @@ package com.example.modules.order.dao
 
 import com.example.modules.article.model.Articles
 import com.example.db.DatabaseSingleton.dbQuery
+import com.example.modules.order.model.CreateOrderDTO
 import com.example.modules.order.model.Order
 import com.example.modules.order.model.Orders
 import com.example.modules.order.model.Orders.id
@@ -34,15 +35,27 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
             .singleOrNull()
     }
 
-    override suspend fun addNewOrder(order: Order): Order? = dbQuery{
+    override suspend fun addNewOrder(order: CreateOrderDTO, createdDeliveryId: Int): Order? = dbQuery{
         val insertStatement = Orders.insert { it ->
             it[Orders.addressId] = order.addressId
             it[Orders.customerId] = order.customerId
-            it[Orders.deliveryId] = order.deliveryId
-            it[Orders.date] = order.date
+            it[Orders.deliveryId] = createdDeliveryId
             it[Orders.total] = order.total
         }
-        insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToOrder)
+        val createdOrder : Order? = insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToOrder)
+
+        if (createdOrder != null) {
+            order.productsId.forEach { productQty ->
+                OrdersProducts.insert {
+                    it[orderId] = createdOrder.id
+                    it[productId] = productQty.productId
+                    it[qty] = productQty.qty
+                }
+            }
+        }
+
+
+        createdOrder
     }
 
     override suspend fun editOrder(order: Order): Boolean  = dbQuery {

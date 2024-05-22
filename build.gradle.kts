@@ -41,5 +41,10 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktor_version")
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-datetime
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-datetime:$ktor_version")
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    // https://mvnrepository.com/artifact/io.ktor/ktor-client-content-negotiation
+    runtimeOnly("io.ktor:ktor-client-content-negotiation:2.3.11")
+
 
 }
