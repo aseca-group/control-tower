@@ -20,6 +20,7 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
         addressId = row[Orders.addressId],
         customerId = row[Orders.customerId],
         total = row[Orders.total],
+        deliveryId = row[Orders.deliveryId],
         date = row[Orders.date]
     )
     override suspend fun allOrders(): List<Order> = dbQuery{
@@ -37,6 +38,7 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
         val insertStatement = Orders.insert { it ->
             it[Orders.addressId] = order.addressId
             it[Orders.customerId] = order.customerId
+            it[Orders.deliveryId] = order.deliveryId
             it[Orders.date] = order.date
             it[Orders.total] = order.total
         }
@@ -47,6 +49,7 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
         Orders.update({ Orders.id eq id }) {
             it[Orders.addressId] = order.addressId
             it[Orders.customerId] = order.customerId
+            it[Orders.deliveryId] = order.deliveryId
             it[Orders.date] = order.date
             it[Orders.total] = order.total
         } > 0
