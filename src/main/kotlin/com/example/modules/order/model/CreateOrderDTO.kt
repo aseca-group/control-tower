@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 class CreateOrderDTO(
     val productsId : List<@Contextual ProductQty>,
-    val  addressId: Int,
+    val addressId: Int,
     val customerId: Int,
     val total: Double
 )

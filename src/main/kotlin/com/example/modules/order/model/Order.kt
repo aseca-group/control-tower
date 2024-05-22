@@ -28,7 +28,7 @@ data class Order(val id: Int,
                  val deliveryId: Int,
                  @Contextual val date: LocalDateTime)
 
-@Suppress()
+@Serializable()
 data class ProductQty(val productId: Int, val qty: Int)
 
 // This defines the database table
