@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.modules.order.controller
 
 import com.example.modules.order.dao.orderDao
@@ -36,11 +38,10 @@ fun Route.order() {
             call.respondRedirect("/orders/${order.id}")
         }
 
-        put("delete"){
+        put("delete") {
             val id = call.parameters.getOrFail<Int>("id").toInt()
             orderDao.deleteOrder(id)
-            call.respondRedirect("/orders/${id}")
+            call.respondRedirect("/orders/$id")
         }
     }
-
 }
