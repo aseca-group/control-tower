@@ -22,7 +22,11 @@ import java.time.LocalDateTime
 @Serializable
 data class Order(val id: Int,
                  val productsId : List<@Contextual ProductQty>,
-                 val  addressId: Int, val customerId: Int, val total: Double, @Contextual val date: LocalDateTime)
+                 val  addressId: Int,
+                 val customerId: Int,
+                 val total: Double,
+                 val deliveryId: Int,
+                 @Contextual val date: LocalDateTime)
 
 @Suppress()
 data class ProductQty(val productId: Int, val qty: Int)
@@ -31,6 +35,7 @@ data class ProductQty(val productId: Int, val qty: Int)
 object Orders: IntIdTable(){
     val addressId = integer("addressId") references Addresses.id
     val customerId = integer("customerId") references Customers.id
+    val deliveryId = integer("deliveryId")
     val total = double("total")
     val date : Column<LocalDateTime> = datetime("date").defaultExpression(CurrentDateTime)
 }
