@@ -11,11 +11,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 
-import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.javatime.CurrentDateTime
-import org.jetbrains.exposed.sql.javatime.datetime
-import java.time.LocalDateTime
 
 
 // This is the kotlin object, we will use this to receive information about orders.
@@ -26,7 +22,7 @@ data class Order(val id: Int,
                  val customerId: Int,
                  val total: Double,
                  val deliveryId: Int,
-                 @Contextual val date: LocalDateTime)
+                 val date: String)
 
 @Serializable()
 data class ProductQty(val productId: Int, val qty: Int)
@@ -37,7 +33,7 @@ object Orders: IntIdTable(){
     val customerId = integer("customerId") references Customers.id
     val deliveryId = integer("deliveryId")
     val total = double("total")
-    val date : Column<LocalDateTime> = datetime("date").defaultExpression(CurrentDateTime)
+    val date = varchar("date", 50)
 }
 
 class OrderEntity( id: EntityID<Int>) : IntEntity(id) {
