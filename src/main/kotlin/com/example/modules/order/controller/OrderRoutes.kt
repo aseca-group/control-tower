@@ -28,8 +28,8 @@ fun Route.order() {
         }
 
         post {
-            val deliveryId = runBlocking{clientService.getDeliveryId()}
             val order = call.receive<CreateOrderDTO>()
+            val deliveryId = runBlocking{clientService.getDeliveryId(order.addressId)}
             val createdOrder = orderDao.addNewOrder(order, deliveryId)
             call.respondRedirect("/orders/${createdOrder?.id}")
         }
