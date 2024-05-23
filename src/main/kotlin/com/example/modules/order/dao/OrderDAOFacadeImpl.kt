@@ -12,6 +12,7 @@ import com.example.modules.order.model.OrdersProducts.qty
 import com.example.modules.order.model.ProductQty
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import java.time.LocalDateTime
 
 class OrderDAOFacadeImpl : OrderDAOFacade {
 
@@ -36,11 +37,12 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
     }
 
     override suspend fun addNewOrder(order: CreateOrderDTO, createdDeliveryId: Int): Order? = dbQuery{
-        val insertStatement = Orders.insert { it ->
-            it[Orders.addressId] = order.addressId
-            it[Orders.customerId] = order.customerId
-            it[Orders.deliveryId] = createdDeliveryId
-            it[Orders.total] = order.total
+        val insertStatement = Orders.insert {
+            it[addressId] = order.addressId
+            it[customerId] = order.customerId
+            it[deliveryId] = createdDeliveryId
+            it[total] = order.total
+            it[date] = LocalDateTime.now().toString()
         }
         val createdOrder : Order? = insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToOrder)
 
@@ -60,11 +62,11 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
 
     override suspend fun editOrder(order: Order): Boolean  = dbQuery {
         Orders.update({ Orders.id eq id }) {
-            it[Orders.addressId] = order.addressId
-            it[Orders.customerId] = order.customerId
-            it[Orders.deliveryId] = order.deliveryId
-            it[Orders.date] = order.date
-            it[Orders.total] = order.total
+            it[addressId] = order.addressId
+            it[customerId] = order.customerId
+            it[deliveryId] = order.deliveryId
+            it[date] = order.date
+            it[total] = order.total
         } > 0
     }
 
