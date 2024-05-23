@@ -52,3 +52,5 @@ class ProductDAOImpl : ProductDAOFacade {
             Products.deleteWhere { Products.id eq id } > 0
         }
 }
+
+val productDao = ProductDAOImpl()
