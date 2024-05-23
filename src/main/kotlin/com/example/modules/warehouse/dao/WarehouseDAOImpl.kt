@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.modules.warehouse.dao
 
 import com.example.modules.warehouse.model.Warehouse

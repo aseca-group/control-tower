@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.modules.article.model
 
 import kotlinx.serialization.Serializable

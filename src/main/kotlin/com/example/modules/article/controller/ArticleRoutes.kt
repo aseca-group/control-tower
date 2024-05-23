@@ -1,5 +1,6 @@
-package com.example.modules.article.controller
+@file:Suppress("ktlint:standard:no-wildcard-imports")
 
+package com.example.modules.article.controller
 
 import com.example.modules.article.dao.dao
 import com.example.modules.article.model.Article
