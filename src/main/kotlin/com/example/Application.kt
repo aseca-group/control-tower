@@ -1,6 +1,5 @@
 package com.example
 
-import com.example.modules.article.controller.article
 import com.example.db.DatabaseSingleton
 import com.example.modules.address.controller.address
 import com.example.modules.order.controller.order
@@ -20,7 +19,6 @@ fun Application.module() {
         json()
     }
     install(Routing) {
-        article()
         order()
         address()
         product()

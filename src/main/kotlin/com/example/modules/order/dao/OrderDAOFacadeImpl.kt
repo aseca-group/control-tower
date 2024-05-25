@@ -1,6 +1,5 @@
 package com.example.modules.order.dao
 
-import com.example.modules.article.model.Articles
 import com.example.db.DatabaseSingleton.dbQuery
 import com.example.modules.order.model.CreateOrderDTO
 import com.example.modules.order.model.Order
@@ -31,7 +30,7 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
 
     override suspend fun order(id: Int): Order? = dbQuery {
         Orders
-            .select { Articles.id eq id }
+            .select { Orders.id eq id }
             .map(::resultRowToOrder)
             .singleOrNull()
     }
