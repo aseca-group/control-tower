@@ -17,5 +17,19 @@ services:
     volumes:
       - h2-data:/opt/h2-data
 
+  master:
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --master -H http://master:8089
+
+  worker:
+      image: locustio/locust
+      volumes:
+        - ./:/mnt/locust
+      command: -f /mnt/locust/locustfile.py --worker --master-host master
+
 volumes:
   h2-data:
