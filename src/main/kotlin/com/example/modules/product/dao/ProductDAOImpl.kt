@@ -1,6 +1,7 @@
 package com.example.modules.product.dao
 
 import com.example.db.DatabaseSingleton.dbQuery
+import com.example.modules.product.model.CreateProductDTO
 import com.example.modules.product.model.Product
 import com.example.modules.product.model.Products
 import org.jetbrains.exposed.sql.*
@@ -24,9 +25,9 @@ class ProductDAOImpl : ProductDAOFacade {
             .singleOrNull()
     }
 
-    override suspend fun addNewProduct(product: Product): Product? = dbQuery{
+    override suspend fun addNewProduct(product: CreateProductDTO): Product? = dbQuery{
         val insertStatement = Products.insert {
-            it[price] = price
+            it[price] = product.price
             it[name] = product.name
         }
          insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToProduct)
@@ -34,8 +35,8 @@ class ProductDAOImpl : ProductDAOFacade {
 
     override suspend fun editProduct(product: Product): Boolean = dbQuery {
          Products.update({ Products.id eq product.id}) {
-            it[price] = price
-            it[name] = name
+            it[price] = product.price
+            it[name] = product.name
         } > 0
     }
 

@@ -17,7 +17,6 @@ class Product(
 object Products: IntIdTable() {
     val price = double("price")
     val name = varchar("name", 255)
-
 }
 
 class ProductEntity(id: EntityID<Int>): IntEntity(id) {

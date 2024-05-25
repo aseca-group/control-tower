@@ -3,6 +3,7 @@ package com.example.modules.product.controller
 import com.example.modules.address.dao.addressDao
 import com.example.modules.address.model.Address
 import com.example.modules.product.dao.productDao
+import com.example.modules.product.model.CreateProductDTO
 import com.example.modules.product.model.Product
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -17,7 +18,7 @@ fun Route.product() {
 
     route("product") {
         post {
-            val product = call.receive<Product>()
+            val product = call.receive<CreateProductDTO>()
             val createdProduct = productDao.addNewProduct(product)
             call.respondRedirect("/product/${createdProduct?.id}")
         }
