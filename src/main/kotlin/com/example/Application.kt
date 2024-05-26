@@ -2,6 +2,7 @@ package com.example
 
 import com.example.db.DatabaseSingleton
 import com.example.modules.address.controller.address
+import com.example.modules.customer.controller.customer
 import com.example.modules.order.controller.order
 import com.example.modules.product.controller.product
 import io.ktor.serialization.kotlinx.json.*
@@ -22,6 +23,7 @@ fun Application.module() {
         order()
         address()
         product()
+        customer()
     }
 
 }
