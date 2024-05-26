@@ -33,16 +33,6 @@ class HttpClientService {
             setBody(AddressIdWrapper(addressId))
         }
         val responseBody = response.body<String>()
-        return if (responseBody.isNullOrEmpty()) {
-            // Handle case where response body is empty
-            throw IllegalStateException("Response body is empty")
-        } else {
-            try {
-                responseBody.toInt()
-            } catch (e: NumberFormatException) {
-                // Handle case where response body cannot be parsed as an integer
-                throw IllegalStateException("Failed to parse response body as integer", e)
-            }
-        }
+        return responseBody.toInt()
     }
 }
