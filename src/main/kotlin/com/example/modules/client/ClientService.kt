@@ -26,7 +26,9 @@ class HttpClientService {
     data class AddressIdWrapper(val addressId: Int)
 
     suspend fun getDeliveryId(addressId: Int): Int {
-        val response: HttpResponse = client.post("http://localhost:8081/delivery") {
+        //val url = "http://app/delivery"
+        val url = "http://localhost:8081/delivery"
+        val response: HttpResponse = client.post(url) {
             contentType(ContentType.Application.Json)
             setBody(AddressIdWrapper(addressId))
         }
