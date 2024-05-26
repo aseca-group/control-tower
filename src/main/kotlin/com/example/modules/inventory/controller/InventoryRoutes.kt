@@ -3,6 +3,7 @@
 package com.example.modules.inventory.controller
 
 import com.example.modules.inventory.dao.inventoryDao
+import com.example.modules.inventory.model.CreateInventoryDTO
 import com.example.modules.inventory.model.Inventory
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -16,34 +17,32 @@ fun Route.inventory() {
     }
 
     route("inventory") {
+        post {
+            val inventory = call.receive<CreateInventoryDTO>()
+            val createdInventory = inventoryDao.addNewInventory(inventory)
+            call.respondRedirect("/inventory/${createdInventory?.productId}")
+        }
+
         get("/") {
             call.respond(inventoryDao.allInventories())
         }
 
         get {
-            val warehouseId = call.parameters.getOrFail<Int>("warehouseId").toInt()
             val productId = call.parameters.getOrFail<Int>("productId").toInt()
-            val inventory = inventoryDao.inventory(warehouseId, productId)!!
+            val inventory = inventoryDao.inventory(productId)!!
             call.respond(inventory)
-        }
-
-        post {
-            val inventory = call.receive<Inventory>()
-            val createdInventory = inventoryDao.addNewInventory(inventory)
-            call.respondRedirect("/inventory/${createdInventory?.id}")
         }
 
         put("update") {
             val inventory = call.receive<Inventory>()
             inventoryDao.editInventory(inventory)
-            call.respondRedirect("/inventory/${inventory.id}")
+            call.respondRedirect("/inventory/${inventory.productId}")
         }
 
         delete("delete") {
-            val warehouseId = call.parameters.getOrFail<Int>("warehouseId").toInt()
             val productId = call.parameters.getOrFail<Int>("productId").toInt()
-            inventoryDao.deleteInventory(warehouseId, productId)
-            call.respondRedirect("/inventory/$warehouseId/$productId")
+            inventoryDao.deleteInventory(productId)
+            call.respondRedirect("/inventory/$productId")
         }
     }
 }

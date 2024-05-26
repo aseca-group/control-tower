@@ -5,7 +5,7 @@ package com.example.db
 import com.example.modules.address.model.Addresses
 import com.example.modules.article.model.*
 import com.example.modules.inventory.model.Inventories
-import com.example.modules.warehouse.model.Warehouses
+import com.example.modules.product.model.Products
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.*
@@ -19,8 +19,8 @@ object DatabaseSingleton {
         transaction(database) {
             SchemaUtils.create(Articles)
             SchemaUtils.create(Addresses)
-            SchemaUtils.create(Warehouses)
             SchemaUtils.create(Inventories)
+            SchemaUtils.create(Products)
         }
     }
 

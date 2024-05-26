@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.modules.address.controller
 
 import com.example.modules.address.dao.addressDao
@@ -28,4 +30,3 @@ fun Route.address() {
         }
     }
 }
-
