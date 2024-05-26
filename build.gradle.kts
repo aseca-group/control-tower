@@ -25,24 +25,21 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core-jvm")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm")
-    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
-    implementation("io.ktor:ktor-server-netty-jvm")
+    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
-    testImplementation("io.ktor:ktor-server-tests-jvm")
+    testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-java-time:$exposed_version")
     implementation("com.h2database:h2:$h2_version")
-    implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
-    implementation("io.ktor:ktor-serialization-jackson:$ktor_version")
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-datetime
-    runtimeOnly("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
-    // https://mvnrepository.com/artifact/io.ktor/ktor-client-content-negotiation
-    runtimeOnly("io.ktor:ktor-client-content-negotiation:2.3.11")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    runtimeOnly("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
 }
+

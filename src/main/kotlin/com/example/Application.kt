@@ -1,10 +1,8 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package com.example
 
 import com.example.db.DatabaseSingleton
 import com.example.modules.address.controller.address
-import com.example.modules.article.controller.article
+import com.example.modules.customer.controller.customer
 import com.example.modules.inventory.controller.inventory
 import com.example.modules.order.controller.order
 import com.example.modules.product.controller.product
@@ -23,10 +21,10 @@ fun Application.module() {
         json()
     }
     install(Routing) {
-        article()
         order()
         address()
         product()
+        customer()
         inventory()
     }
 }
