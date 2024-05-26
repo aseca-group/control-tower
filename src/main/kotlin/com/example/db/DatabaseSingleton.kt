@@ -3,6 +3,7 @@ package com.example.db
 import com.example.modules.address.model.Addresses
 import com.example.modules.customer.model.Customers
 import com.example.modules.order.model.Orders
+import com.example.modules.order.model.OrdersProducts
 import com.example.modules.product.model.Products
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.*
@@ -15,7 +16,8 @@ object DatabaseSingleton {
         val jdbcURL = "jdbc:h2:file:./build/db"
         val database = Database.connect(jdbcURL, driverClassName)
         transaction(database) {
-            SchemaUtils.create(Addresses, Customers, Orders, Products)
+            //SchemaUtils.drop(Addresses, Customers, Orders, Products, OrdersProducts)
+            SchemaUtils.create(Addresses, Customers, Orders, Products, OrdersProducts)
         }
     }
 
