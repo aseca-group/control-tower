@@ -1,6 +1,5 @@
 package com.example.modules.order.dao
 
-import com.example.modules.article.model.Articles
 import com.example.db.DatabaseSingleton.dbQuery
 import com.example.modules.order.model.CreateOrderDTO
 import com.example.modules.order.model.Order
@@ -16,22 +15,33 @@ import java.time.LocalDateTime
 
 class OrderDAOFacadeImpl : OrderDAOFacade {
 
-    private fun resultRowToOrder(row: ResultRow) = Order (
-        id = row[Orders.id].value,
-        productsId = OrdersProducts.select { OrdersProducts.orderId eq id }.map { ProductQty (it[productId].value, it[qty]) }, //Select all entries that have our order id and get the product id and quantity.
-        addressId = row[Orders.addressId],
-        customerId = row[Orders.customerId],
-        total = row[Orders.total],
-        deliveryId = row[Orders.deliveryId],
-        date = row[Orders.date]
-    )
+    private fun resultRowToOrder(row: ResultRow): Order {
+        val orderId = row[Orders.id].value
+        val products = OrdersProducts
+            .innerJoin(Orders)
+            .slice(OrdersProducts.productId, OrdersProducts.qty)
+            .select { Orders.id eq orderId }
+            .map { ProductQty(it[OrdersProducts.productId].value, it[OrdersProducts.qty]) }
+
+        return Order(
+            id = row[Orders.id].value,
+            productsId = products,
+            addressId = row[Orders.addressId],
+            customerId = row[Orders.customerId],
+            total = row[Orders.total],
+            deliveryId = row[Orders.deliveryId],
+            date = row[Orders.date]
+        )
+    }
+
+
     override suspend fun allOrders(): List<Order> = dbQuery{
         Orders.selectAll().map(::resultRowToOrder)
     }
 
     override suspend fun order(id: Int): Order? = dbQuery {
         Orders
-            .select { Articles.id eq id }
+            .select { Orders.id eq id }
             .map(::resultRowToOrder)
             .singleOrNull()
     }

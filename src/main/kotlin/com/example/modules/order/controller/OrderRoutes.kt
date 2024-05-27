@@ -4,8 +4,7 @@ import com.example.modules.client.HttpClientService
 import com.example.modules.order.dao.orderDao
 import com.example.modules.order.model.CreateOrderDTO
 import com.example.modules.order.model.Order
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -17,38 +16,52 @@ val clientService = HttpClientService()
 
 fun Route.order() {
     get("/") {
-        call.respondRedirect("order")
+        call.respondRedirect("/order")
     }
 
-    route("order") {
+    route("/order") {
         get {
             call.respond(orderDao.allOrders())
         }
 
         post {
             val order = call.receive<CreateOrderDTO>()
-            val deliveryId = runBlocking{clientService.getDeliveryId(order.addressId)}
+            val deliveryId = runBlocking { clientService.getDeliveryId(order.addressId) }
             val createdOrder = orderDao.addNewOrder(order, deliveryId)
-            call.respondRedirect("/orders/${createdOrder?.id}")
+            call.respondRedirect("/order/${createdOrder?.id}")
         }
 
-        get {
+        get("/{id}") {
             val id = call.parameters.getOrFail<Int>("id").toInt()
-            val order: Order = orderDao.order(id)!!
-            call.respond(order)
+            val order: Order? = orderDao.order(id)
+            if (order != null) {
+                call.respond(order)
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
         }
 
-        put("update") {
+        put("/{id}/update") {
+            val id = call.parameters.getOrFail<Int>("id").toInt()
             val order = call.receive<Order>()
-            orderDao.editOrder(order)
-            call.respondRedirect("/orders/${order.id}")
+            if (order.id == id) {
+                if (orderDao.editOrder(order)) {
+                    call.respondRedirect("/orders/${order.id}")
+                } else {
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+            } else {
+                call.respond(HttpStatusCode.BadRequest, "Order ID in path does not match ID in body")
+            }
         }
 
-        put("delete"){
+        delete("/{id}") {
             val id = call.parameters.getOrFail<Int>("id").toInt()
-            orderDao.deleteOrder(id)
-            call.respondRedirect("/orders/${id}")
+            if (orderDao.deleteOrder(id)) {
+                call.respondRedirect("/orders/${id}")
+            } else {
+                call.respond(HttpStatusCode.InternalServerError)
+            }
         }
     }
-
 }
