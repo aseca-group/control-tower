@@ -1,7 +1,8 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.modules.address.controller
 
 import com.example.modules.address.dao.addressDao
-import com.example.modules.address.model.Address
 import com.example.modules.address.model.CreateAddressDTO
 import io.ktor.server.application.*
 import io.ktor.server.request.*

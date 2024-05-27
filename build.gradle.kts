@@ -1,3 +1,4 @@
+@Suppress("ktlint:standard:property-naming")
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
@@ -42,4 +43,3 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
 }
-

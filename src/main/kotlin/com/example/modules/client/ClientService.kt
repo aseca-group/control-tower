@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename", "ktlint:standard:no-wildcard-imports")
+
 package com.example.modules.client
 
 import io.ktor.client.*
@@ -12,26 +14,29 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 class HttpClientService {
-
-    private val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-            })
+    private val client =
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                json(
+                    Json {
+                        prettyPrint = true
+                        isLenient = true
+                    },
+                )
+            }
         }
-    }
 
     @Serializable
     data class AddressIdWrapper(val addressId: Int)
 
     suspend fun getDeliveryId(addressId: Int): Int {
-        //val url = "http://app/delivery"
+        // val url = "http://app/delivery"
         val url = "http://localhost:8081/delivery"
-        val response: HttpResponse = client.post(url) {
-            contentType(ContentType.Application.Json)
-            setBody(AddressIdWrapper(addressId))
-        }
+        val response: HttpResponse =
+            client.post(url) {
+                contentType(ContentType.Application.Json)
+                setBody(AddressIdWrapper(addressId))
+            }
         val responseBody = response.body<String>()
         return if (responseBody.isNullOrEmpty()) {
             // Handle case where response body is empty
