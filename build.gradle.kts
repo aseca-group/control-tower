@@ -42,4 +42,5 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
