@@ -1,7 +1,10 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.db
 
 import com.example.modules.address.model.Addresses
 import com.example.modules.customer.model.Customers
+import com.example.modules.inventory.model.Inventories
 import com.example.modules.order.model.Orders
 import com.example.modules.order.model.OrdersProducts
 import com.example.modules.product.model.Products
@@ -16,8 +19,8 @@ object DatabaseSingleton {
         val jdbcURL = "jdbc:h2:file:./build/db"
         val database = Database.connect(jdbcURL, driverClassName)
         transaction(database) {
-            //SchemaUtils.drop(Addresses, Customers, Orders, Products, OrdersProducts)
-            SchemaUtils.create(Addresses, Customers, Orders, Products, OrdersProducts)
+            //SchemaUtils.drop(Addresses, Customers, Orders, Products, OrdersProducts, Inventories)
+            SchemaUtils.create(Addresses, Customers, Orders, Products, OrdersProducts, Inventories)
         }
     }
 

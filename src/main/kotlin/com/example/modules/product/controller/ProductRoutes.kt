@@ -1,10 +1,9 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.modules.product.controller
 
-import com.example.modules.address.dao.addressDao
-import com.example.modules.address.model.Address
 import com.example.modules.product.dao.productDao
 import com.example.modules.product.model.CreateProductDTO
-import com.example.modules.product.model.Product
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -16,6 +15,7 @@ fun Route.product() {
         get {
             call.respond(productDao.allProducts())
         }
+
         get("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull()
             if (id == null) {
