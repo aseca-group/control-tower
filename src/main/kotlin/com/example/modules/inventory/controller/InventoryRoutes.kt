@@ -121,10 +121,6 @@ fun Route.inventory() {
 
         patch("/removeReservedStock") {
             val removeReservedStockDTO = call.receive<RemoveReservedStockDTO>()
-            if (removeReservedStockDTO.stockToRemove <= 0) {
-                call.respond(HttpStatusCode.BadRequest, "Error: Stock to remove must be a positive number.")
-                return@patch
-            }
             val updatedInventory = inventoryDao.removeReservedStock(removeReservedStockDTO)
             if (updatedInventory != null) {
                 call.respond(HttpStatusCode.OK, "Updated reserved stock amount: ${updatedInventory.reservedStock}")

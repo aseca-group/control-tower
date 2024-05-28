@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class RemoveReservedStockDTO(
-    val productId: Int,
-    val stockToRemove: Int,
+//    val productId: Int,
+//    val stockToRemove: Int,
+    val deliveryId: Int
 )
