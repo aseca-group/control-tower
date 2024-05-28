@@ -1,20 +1,16 @@
 package integration
 
 import com.example.module
-import com.example.modules.address.model.Address
 import com.example.modules.address.model.Addresses
 import com.example.modules.address.model.CreateAddressDTO
-import com.example.modules.customer.model.Customers
 import com.example.modules.order.model.Orders
 import com.example.modules.order.model.OrdersProducts
 import com.example.modules.product.model.Products
-import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.testing.*
-import io.ktor.util.*
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
@@ -25,7 +21,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
-class IntegrationApiDbTest {
+class IntegrationDbApiAddressTest {
     @Before
     fun setup() {
         Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
