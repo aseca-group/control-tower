@@ -1,6 +1,9 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.modules.order.dao
 
 import com.example.db.DatabaseSingleton.dbQuery
+import com.example.modules.inventory.model.Inventories
 import com.example.modules.order.model.CreateOrderDTO
 import com.example.modules.order.model.Order
 import com.example.modules.order.model.Orders
@@ -14,14 +17,14 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
 
 class OrderDAOFacadeImpl : OrderDAOFacade {
-
     private fun resultRowToOrder(row: ResultRow): Order {
         val orderId = row[Orders.id].value
-        val products = OrdersProducts
-            .innerJoin(Orders)
-            .slice(OrdersProducts.productId, OrdersProducts.qty)
-            .select { Orders.id eq orderId }
-            .map { ProductQty(it[OrdersProducts.productId].value, it[OrdersProducts.qty]) }
+        val products =
+            OrdersProducts
+                .innerJoin(Orders)
+                .slice(OrdersProducts.productId, OrdersProducts.qty)
+                .select { Orders.id eq orderId }
+                .map { ProductQty(it[OrdersProducts.productId].value, it[OrdersProducts.qty]) }
 
         return Order(
             id = row[Orders.id].value,
@@ -30,61 +33,115 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
             customerId = row[Orders.customerId],
             total = row[Orders.total],
             deliveryId = row[Orders.deliveryId],
-            date = row[Orders.date]
+            date = row[Orders.date],
         )
     }
 
-
-    override suspend fun allOrders(): List<Order> = dbQuery{
-        Orders.selectAll().map(::resultRowToOrder)
-    }
-
-    override suspend fun order(id: Int): Order? = dbQuery {
-        Orders
-            .select { Orders.id eq id }
-            .map(::resultRowToOrder)
-            .singleOrNull()
-    }
-
-    override suspend fun addNewOrder(order: CreateOrderDTO, createdDeliveryId: Int, createdTotal: Double): Order? = dbQuery{
-        val insertStatement = Orders.insert {
-            it[addressId] = order.addressId
-            it[customerId] = order.customerId
-            it[deliveryId] = createdDeliveryId
-            it[total] = createdTotal
-            it[date] = LocalDateTime.now().toString()
+    private suspend fun checkStockAvailability(products: List<ProductQty>): Boolean {
+        for (product in products) {
+            val productStock =
+                dbQuery {
+                    Inventories
+                        .select { Inventories.productId eq product.productId }
+                        .singleOrNull()
+                }
+            if (productStock != null) {
+                val newReservedStock = productStock[Inventories.reservedStock] + product.qty
+                if (newReservedStock > productStock[Inventories.stock]) {
+                    return false
+                }
+            } else {
+                return false
+            }
         }
-        val createdOrder : Order? = insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToOrder)
+        return true
+    }
 
-        if (createdOrder != null) {
-            order.productsId.forEach { productQty ->
-                OrdersProducts.insert {
-                    it[orderId] = createdOrder.id
-                    it[productId] = productQty.productId
-                    it[qty] = productQty.qty
+    private suspend fun addReservedStock(products: List<ProductQty>) {
+        for (product in products) {
+            val productStock =
+                dbQuery {
+                    Inventories
+                        .select { Inventories.productId eq product.productId }
+                        .singleOrNull()
+                }
+            if (productStock != null) {
+                val newReservedStock = productStock[Inventories.reservedStock] + product.qty
+                Inventories.update({ Inventories.productId eq product.productId }) {
+                    it[reservedStock] = newReservedStock
                 }
             }
         }
-
-
-        createdOrder
     }
 
-    override suspend fun editOrder(order: Order): Boolean  = dbQuery {
-        Orders.update({ Orders.id eq id }) {
-            it[addressId] = order.addressId
-            it[customerId] = order.customerId
-            it[deliveryId] = order.deliveryId
-            it[date] = order.date
-            it[total] = order.total
-        } > 0
+    override suspend fun allOrders(): List<Order> =
+        dbQuery {
+            Orders.selectAll().map(::resultRowToOrder)
+        }
+
+    override suspend fun order(id: Int): Order? =
+        dbQuery {
+            Orders
+                .select { Orders.id eq id }
+                .map(::resultRowToOrder)
+                .singleOrNull()
+        }
+
+    override suspend fun addNewOrder(
+        order: CreateOrderDTO,
+        createdDeliveryId: Int,
+        createdTotal: Double,
+    ): Order? {
+        if (!checkStockAvailability(order.productsId)) {
+            return null
+        }
+        val newOrder =
+            dbQuery {
+                val insertStatement =
+                    Orders.insert {
+                        it[addressId] = order.addressId
+                        it[customerId] = order.customerId
+                        it[deliveryId] = createdDeliveryId
+                        it[total] = createdTotal
+                        it[date] = LocalDateTime.now().toString()
+                    }
+                val createdOrder: Order? = insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToOrder)
+
+                if (createdOrder != null) {
+                    order.productsId.forEach { productQty ->
+                        OrdersProducts.insert {
+                            it[orderId] = createdOrder.id
+                            it[productId] = productQty.productId
+                            it[qty] = productQty.qty
+                        }
+                    }
+                }
+
+                createdOrder
+            }
+        if (newOrder != null)
+            {
+                addReservedStock(order.productsId)
+                return newOrder
+            }
+        return null
     }
 
-    override suspend fun deleteOrder(id: Int): Boolean = dbQuery {
-        Orders.deleteWhere { Orders.id eq id } > 0
-    }
+    override suspend fun editOrder(order: Order): Boolean =
+        dbQuery {
+            Orders.update({ Orders.id eq id }) {
+                it[addressId] = order.addressId
+                it[customerId] = order.customerId
+                it[deliveryId] = order.deliveryId
+                it[date] = order.date
+                it[total] = order.total
+            } > 0
+        }
 
-
+    override suspend fun deleteOrder(id: Int): Boolean =
+        dbQuery {
+            Orders.deleteWhere { Orders.id eq id } > 0
+        }
 }
 
 val orderDao: OrderDAOFacadeImpl = OrderDAOFacadeImpl()
