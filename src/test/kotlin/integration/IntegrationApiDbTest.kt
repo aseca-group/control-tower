@@ -3,6 +3,7 @@ package integration
 import com.example.module
 import com.example.modules.address.model.Address
 import com.example.modules.address.model.Addresses
+import com.example.modules.address.model.CreateAddressDTO
 import com.example.modules.customer.model.Customers
 import com.example.modules.order.model.Orders
 import com.example.modules.order.model.OrdersProducts
@@ -16,6 +17,8 @@ import io.ktor.server.testing.*
 import io.ktor.util.*
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.After
@@ -70,6 +73,53 @@ class IntegrationApiDbTest {
 
     @Test
     fun postAddress() = withTestApplication(Application::module) {
+        runBlocking {
+            val addressDTO = CreateAddressDTO(
+                city = "Cordoba",
+                road = "San Martin",
+                number = 10
+            )
 
+            val call = handleRequest(HttpMethod.Post, "/address") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(Json.encodeToString(addressDTO))
+            }
+
+            assertEquals(HttpStatusCode.OK, call.response.status())
+            val responseBody = call.response.content
+            println(responseBody)
+            assert(responseBody!!.contains("Cordoba"))
+            assert(responseBody.contains("San Martin"))
+            assert(responseBody.contains("10"))
+        }
+    }
+
+    @Test
+    fun testDeleteAddress() = withTestApplication(Application::module) {
+        transaction {
+            Addresses.insert {
+                it[city] = "Buenos Aires"
+                it[road] = "Bocaaaa"
+                it[number] = 7
+            }
+        }
+
+        runBlocking {
+            val deleteCall = handleRequest(HttpMethod.Delete, "/address/1") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+
+            assertEquals(HttpStatusCode.OK, deleteCall.response.status())
+            val deleteResponseBody = deleteCall.response.content
+            assert(deleteResponseBody!!.contains("Address 1 deleted"))
+
+            val getCall = handleRequest(HttpMethod.Get, "/address/1") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+
+            assertEquals(HttpStatusCode.OK, getCall.response.status())
+            val getResponseBody = getCall.response.content
+            assert(getResponseBody!!.contains("Address not found"))
+        }
     }
 }
