@@ -44,9 +44,10 @@ class AddressDAOImpl : AddressDAOFacade {
                 .map(::resultRowToAddress)
         }
 
-    override suspend fun deleteAddress(id: Int): Boolean {
-        return Addresses.deleteWhere { Addresses.id eq id } > 0
-    }
+    override suspend fun deleteAddress(id: Int): Boolean  =
+        dbQuery {
+            Addresses.deleteWhere { Addresses.id eq id } > 0
+        }
 }
 
 val addressDao: AddressDAOImpl = AddressDAOImpl()
