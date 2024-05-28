@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 class MarkAsUnreservedDTO(
     val productId: Int,
     val stockToUnreserve: Int,
+   // val addressId: Int
 )
