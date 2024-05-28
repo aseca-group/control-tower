@@ -121,9 +121,9 @@ fun Route.inventory() {
 
         patch("/removeReservedStock") {
             val removeReservedStockDTO = call.receive<RemoveReservedStockDTO>()
-            val updatedInventory = inventoryDao.removeReservedStock(removeReservedStockDTO)
-            if (updatedInventory != null) {
-                call.respond(HttpStatusCode.OK, "Updated reserved stock amount: ${updatedInventory.reservedStock}")
+            val updatedInventories = inventoryDao.removeReservedStock(removeReservedStockDTO)
+            if (updatedInventories.isNotEmpty()) {
+                call.respond(HttpStatusCode.OK, updatedInventories.map { "Product ID: ${it.productId}, Updated reserved stock: ${it.reservedStock}" })
             } else {
                 call.respond(HttpStatusCode.BadRequest, "Error: Reserved stock could not be removed.")
             }

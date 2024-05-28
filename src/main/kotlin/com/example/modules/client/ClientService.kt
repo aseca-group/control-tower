@@ -34,7 +34,7 @@ class HttpClientService {
     data class DeliveryDTO(val id: Int, val date: String, val status: String, val addressId: Int, val driverId: Int)
 
     suspend fun getDeliveryId(addressId: Int): Int {
-        // val url = "http://app/delivery"
+        //val url = "http://localhost:8081/delivery"
         val url = "http://last-mile-planning-back-app-1:8081/delivery"
         val response: HttpResponse =
             client.post(url) {
@@ -46,6 +46,7 @@ class HttpClientService {
     }
 
     suspend fun getDeliveries(): List<DeliveryDTO> {
+        //val url = "http://localhost:8081/delivery"
         val url = "http://last-mile-planning-back-app-1:8081/delivery"
         val response: HttpResponse = client.get(url)
 

@@ -17,7 +17,6 @@ import com.example.modules.order.model.ProductQty
 import com.example.modules.product.model.Products
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class InventoryDAOImpl : InventoryDAOFacade {
     override suspend fun allInventories(): List<Inventory> =
@@ -151,9 +150,9 @@ class InventoryDAOImpl : InventoryDAOFacade {
         return newInventoryStock
     }
 
-    override suspend fun removeReservedStock(inventory: RemoveReservedStockDTO): Inventory? {
-        var newInventoryStock: Inventory? = null
+    override suspend fun removeReservedStock(inventory: RemoveReservedStockDTO): List<Inventory> {
         val deliveryId = inventory.deliveryId
+        val updatedInventories = mutableListOf<Inventory>()
 
         dbQuery {
             // Retrieve the order associated with the delivery ID
@@ -176,20 +175,20 @@ class InventoryDAOImpl : InventoryDAOFacade {
                         val currentReservedStock = currentInventory[Inventories.reservedStock]
                         val updatedStock = currentStock - reservedStock
                         val updatedReservedStock = currentReservedStock - reservedStock
-                        // Construct the updated inventory object
-                        newInventoryStock = Inventory(productId, updatedStock, updatedReservedStock)
-                        // Execute the update operation
+                        // Update the inventory in the database
                         Inventories.update({ Inventories.productId eq productId }) {
                             it[Inventories.stock] = updatedStock
-                            it[Inventories.reservedStock] = 0
+                            it[Inventories.reservedStock] = updatedReservedStock
                         }
+                        // Add the updated inventory to the list
+                        updatedInventories.add(Inventory(productId, updatedStock, updatedReservedStock))
                     }
                 }
             }
         }
-
-        return newInventoryStock
+        return updatedInventories
     }
+
 
 
 
