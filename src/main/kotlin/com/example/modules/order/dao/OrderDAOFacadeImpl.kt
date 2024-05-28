@@ -46,12 +46,12 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
             .singleOrNull()
     }
 
-    override suspend fun addNewOrder(order: CreateOrderDTO, createdDeliveryId: Int): Order? = dbQuery{
+    override suspend fun addNewOrder(order: CreateOrderDTO, createdDeliveryId: Int, createdTotal: Double): Order? = dbQuery{
         val insertStatement = Orders.insert {
             it[addressId] = order.addressId
             it[customerId] = order.customerId
             it[deliveryId] = createdDeliveryId
-            it[total] = order.total
+            it[total] = createdTotal
             it[date] = LocalDateTime.now().toString()
         }
         val createdOrder : Order? = insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToOrder)
