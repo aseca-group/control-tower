@@ -13,6 +13,8 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.routing.*
+import io.ktor.http.HttpMethod
+
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -25,7 +27,7 @@ fun Application.module() {
     }
 
     install(CORS) {
-        anyHost() // Allows requests from any host. For production, restrict this to specific origins.
+        anyHost()
         allowCredentials = true
         allowNonSimpleContentTypes = true
         allowMethod(HttpMethod.Options)
@@ -37,6 +39,7 @@ fun Application.module() {
         allowHeader("Content-Type")
         allowHeader("Authorization")
     }
+
 
     install(Routing) {
         order()
