@@ -23,7 +23,6 @@ import org.junit.Before
 import org.junit.Test
 
 class IntegrationDbApiCostumerTest {
-
     @Before
     fun setup() {
         Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
@@ -65,49 +64,54 @@ class IntegrationDbApiCostumerTest {
 //    }
 
     @Test
-    fun postCustomer() = withTestApplication(Application::module) {
-        runBlocking {
-            val customerDTO = CreateCustomerDTO(
-                name = "Tista"
-            )
+    fun postCustomer() =
+        withTestApplication(Application::module) {
+            runBlocking {
+                val customerDTO =
+                    CreateCustomerDTO(
+                        name = "Tista",
+                    )
 
-            val call = handleRequest(HttpMethod.Post, "/customer") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(Json.encodeToString(customerDTO))
+                val call =
+                    handleRequest(HttpMethod.Post, "/customer") {
+                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        setBody(Json.encodeToString(customerDTO))
+                    }
+
+                assertEquals(HttpStatusCode.OK, call.response.status())
+                val responseBody = call.response.content
+                println(responseBody)
+                assert(responseBody!!.contains("Tista"))
             }
-
-            assertEquals(HttpStatusCode.OK, call.response.status())
-            val responseBody = call.response.content
-            println(responseBody)
-            assert(responseBody!!.contains("Tista"))
         }
-    }
 
     @Test
-    fun testDeleteCustomer() = withTestApplication(Application::module) {
-        transaction {
-            Customers.insert {
-                it[name] = "Tista"
+    fun testDeleteCustomer() =
+        withTestApplication(Application::module) {
+            transaction {
+                Customers.insert {
+                    it[name] = "Tista"
+                }
+            }
+
+            runBlocking {
+                val deleteCall =
+                    handleRequest(HttpMethod.Delete, "/customer/1") {
+                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    }
+
+                assertEquals(HttpStatusCode.OK, deleteCall.response.status())
+                val deleteResponseBody = deleteCall.response.content
+                assert(deleteResponseBody!!.contains("Customer 1 deleted"))
+
+                val getCall =
+                    handleRequest(HttpMethod.Get, "/customer/1") {
+                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    }
+
+                assertEquals(HttpStatusCode.OK, getCall.response.status())
+                val getResponseBody = getCall.response.content
+                assert(getResponseBody!!.contains("Customer not found"))
             }
         }
-
-        runBlocking {
-            val deleteCall = handleRequest(HttpMethod.Delete, "/customer/1") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            }
-
-            assertEquals(HttpStatusCode.OK, deleteCall.response.status())
-            val deleteResponseBody = deleteCall.response.content
-            assert(deleteResponseBody!!.contains("Customer 1 deleted"))
-
-            val getCall = handleRequest(HttpMethod.Get, "/customer/1") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            }
-
-            assertEquals(HttpStatusCode.OK, getCall.response.status())
-            val getResponseBody = getCall.response.content
-            assert(getResponseBody!!.contains("Customer not found"))
-        }
-    }
-
 }
