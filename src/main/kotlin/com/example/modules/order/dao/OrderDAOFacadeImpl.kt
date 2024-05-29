@@ -38,13 +38,21 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
     }
 
     private suspend fun checkStockAvailability(products: List<ProductQty>): Boolean {
+        // Convertir la lista de productos a un conjunto de IDs para la consulta
+        val productIds = products.map { it.productId }.toSet()
+
+        // Hacer una sola consulta para obtener todos los inventarios necesarios
+        val productStocks =
+            dbQuery {
+                Inventories
+                    .select { Inventories.productId inList productIds }
+                    .map { it[Inventories.productId] to it }
+                    .toMap()
+            }
+
+        // Verificar la disponibilidad de stock en memoria
         for (product in products) {
-            val productStock =
-                dbQuery {
-                    Inventories
-                        .select { Inventories.productId eq product.productId }
-                        .singleOrNull()
-                }
+            val productStock = productStocks[product.productId]
             if (productStock != null) {
                 val newReservedStock = productStock[Inventories.reservedStock] + product.qty
                 if (newReservedStock > productStock[Inventories.stock]) {
@@ -58,17 +66,24 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
     }
 
     private suspend fun addReservedStock(products: List<ProductQty>) {
-        for (product in products) {
-            val productStock =
-                dbQuery {
-                    Inventories
-                        .select { Inventories.productId eq product.productId }
-                        .singleOrNull()
-                }
-            if (productStock != null) {
-                val newReservedStock = productStock[Inventories.reservedStock] + product.qty
-                Inventories.update({ Inventories.productId eq product.productId }) {
-                    it[reservedStock] = newReservedStock
+        dbQuery {
+            // Convertir la lista de productos a un conjunto de IDs para la consulta
+            val productIds = products.map { it.productId }.toSet()
+
+            // Hacer una sola consulta para obtener todos los inventarios necesarios
+            val productStocks =
+                Inventories
+                    .select { Inventories.productId inList productIds }
+                    .associateBy { it[Inventories.productId] }
+
+            // Realizar todas las actualizaciones dentro de una transacción
+            products.forEach { product ->
+                val productStock = productStocks[product.productId]
+                if (productStock != null) {
+                    val newReservedStock = productStock[Inventories.reservedStock] + product.qty
+                    Inventories.update({ Inventories.productId eq product.productId }) {
+                        it[reservedStock] = newReservedStock
+                    }
                 }
             }
         }
@@ -119,11 +134,10 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
 
                 createdOrder
             }
-        if (newOrder != null)
-            {
-                addReservedStock(order.productsId)
-                return newOrder
-            }
+        if (newOrder != null) {
+            addReservedStock(order.productsId)
+            return newOrder
+        }
         return null
     }
 
