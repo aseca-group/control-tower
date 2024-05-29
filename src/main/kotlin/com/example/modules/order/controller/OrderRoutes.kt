@@ -4,6 +4,7 @@ import com.example.modules.client.HttpClientService
 import com.example.modules.order.dao.orderDao
 import com.example.modules.order.model.CreateOrderDTO
 import com.example.modules.order.model.Order
+import com.example.modules.order.service.OrderService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -13,6 +14,7 @@ import io.ktor.server.util.*
 import kotlinx.coroutines.runBlocking
 
 val clientService = HttpClientService()
+val orderService = OrderService()
 
 fun Route.order() {
     get("/") {
@@ -26,8 +28,9 @@ fun Route.order() {
 
         post {
             val order = call.receive<CreateOrderDTO>()
+            val total = orderService.getTotal(order)
             val deliveryId = runBlocking { clientService.getDeliveryId(order.addressId) }
-            val createdOrder = orderDao.addNewOrder(order, deliveryId)
+            val createdOrder = orderDao.addNewOrder(order, deliveryId, total)
             call.respondRedirect("/order/${createdOrder?.id}")
         }
 

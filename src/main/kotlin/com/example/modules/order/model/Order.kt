@@ -36,14 +36,7 @@ object Orders: IntIdTable(){
     val date = varchar("date", 50)
 }
 
-class OrderEntity( id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<OrderEntity>(Orders)
-    var products by ProductEntity via OrdersProducts
-    var customerId by Orders.addressId
-    var total by Orders.total
-    var date by Orders.date
-    var addressId by Orders.addressId
-}
+
 
 object OrdersProducts : Table() {
     val orderId = reference("orderId", Orders)

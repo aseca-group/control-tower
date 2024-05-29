@@ -23,7 +23,7 @@ interface InventoryDAOFacade {
 
     suspend fun removeStock(inventory: RemoveStockDTO): Inventory?
 
-    suspend fun removeReservedStock(inventory: RemoveReservedStockDTO): Inventory?
+    suspend fun removeReservedStock(inventory: RemoveReservedStockDTO): List<Inventory>
 
     suspend fun deleteInventory(productId: Int): Boolean
 }

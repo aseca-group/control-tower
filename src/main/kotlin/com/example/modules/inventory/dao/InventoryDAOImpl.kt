@@ -11,6 +11,9 @@ import com.example.modules.inventory.model.MarkAsReservedDTO
 import com.example.modules.inventory.model.MarkAsUnreservedDTO
 import com.example.modules.inventory.model.RemoveReservedStockDTO
 import com.example.modules.inventory.model.RemoveStockDTO
+import com.example.modules.order.model.Orders
+import com.example.modules.order.model.OrdersProducts
+import com.example.modules.order.model.ProductQty
 import com.example.modules.product.model.Products
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -147,33 +150,48 @@ class InventoryDAOImpl : InventoryDAOFacade {
         return newInventoryStock
     }
 
-    override suspend fun removeReservedStock(inventory: RemoveReservedStockDTO): Inventory? {
-        var newInventoryStock: Inventory? = null
+    override suspend fun removeReservedStock(inventory: RemoveReservedStockDTO): List<Inventory> {
+        val deliveryId = inventory.deliveryId
+        val updatedInventories = mutableListOf<Inventory>()
+
         dbQuery {
-            val originalInventory =
-                Inventories
-                    .select(Inventories.productId eq inventory.productId)
-                    .singleOrNull()
-            if (originalInventory != null) {
-                val newStock = originalInventory[Inventories.stock] - inventory.stockToRemove
-                val newReservedStock = originalInventory[Inventories.reservedStock] - inventory.stockToRemove
-                if (newReservedStock >= 0 && newStock >= 0) {
-                    Inventories.update({ Inventories.productId eq inventory.productId }) {
-                        it[stock] = newStock
-                        it[reservedStock] = newReservedStock
+            // Retrieve the order associated with the delivery ID
+            val order = Orders.select { Orders.deliveryId eq deliveryId }.singleOrNull()
+            if (order != null) {
+                val orderId = order[Orders.id]
+                // Retrieve products associated with the order
+                val products = OrdersProducts.select { OrdersProducts.orderId eq orderId }.map {
+                    ProductQty(it[OrdersProducts.productId].value, it[OrdersProducts.qty])
+                }
+
+                // For each product, update the inventory by subtracting the reserved stock
+                products.forEach { productQty ->
+                    val productId = productQty.productId
+                    val reservedStock = productQty.qty
+                    // Retrieve current inventory
+                    val currentInventory = Inventories.select { Inventories.productId eq productId }.singleOrNull()
+                    if (currentInventory != null) {
+                        val currentStock = currentInventory[Inventories.stock]
+                        val currentReservedStock = currentInventory[Inventories.reservedStock]
+                        val updatedStock = currentStock - reservedStock
+                        val updatedReservedStock = currentReservedStock - reservedStock
+                        // Update the inventory in the database
+                        Inventories.update({ Inventories.productId eq productId }) {
+                            it[Inventories.stock] = updatedStock
+                            it[Inventories.reservedStock] = updatedReservedStock
+                        }
+                        // Add the updated inventory to the list
+                        updatedInventories.add(Inventory(productId, updatedStock, updatedReservedStock))
                     }
-                    val updatedStocks = Inventories.select { Inventories.productId eq inventory.productId }.single()
-                    newInventoryStock =
-                        Inventory(
-                            productId = updatedStocks[Inventories.productId],
-                            stock = updatedStocks[Inventories.stock],
-                            reservedStock = updatedStocks[Inventories.reservedStock],
-                        )
                 }
             }
         }
-        return newInventoryStock
+        return updatedInventories
     }
+
+
+
+
 
     override suspend fun deleteInventory(productId: Int): Boolean =
         dbQuery {

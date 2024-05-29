@@ -26,8 +26,8 @@ class CustomerDaoImpl:CustomerDAOFacade {
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToCustomer)
     }
 
-    override suspend fun deleteCustomer(id: Int): Boolean {
-        return Customers.deleteWhere {Customers.id eq id} > 0
+    override suspend fun deleteCustomer(id: Int): Boolean = dbQuery {
+        Customers.deleteWhere {Customers.id eq id} > 0
     }
 
     override suspend fun getAllCustomers(): List<Customer> = dbQuery {
