@@ -21,10 +21,6 @@ services:
     networks:
       - some-net
 
-networks:
-  some-net:
-    driver: bridge
-
   master:
     image: locustio/locust
     ports:
@@ -32,12 +28,20 @@ networks:
     volumes:
       - ./:/mnt/locust
     command: -f /mnt/locust/locustfile.py --master -H http://master:8089
+    networks:
+      - some-net
 
   worker:
-      image: locustio/locust
-      volumes:
-        - ./:/mnt/locust
-      command: -f /mnt/locust/locustfile.py --worker --master-host master
+    image: locustio/locust
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --worker --master-host master
+    networks:
+      - some-net
+
+networks:
+  some-net:
+    driver: bridge
 
 volumes:
   h2-data:
