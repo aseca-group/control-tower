@@ -35,7 +35,7 @@ class HttpClientService {
 
     suspend fun getDeliveryId(addressId: Int): Int {
         //val url = "http://localhost:8081/delivery"
-        val url = "http://last-mile-planning-back-app-1:8081/delivery"
+        val url = System.getenv("DELIVERY_SERVICE_URL") ?: "http://localhost:8081/delivery"
         val response: HttpResponse =
             client.post(url) {
                 contentType(ContentType.Application.Json)

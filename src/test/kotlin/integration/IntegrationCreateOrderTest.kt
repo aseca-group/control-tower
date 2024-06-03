@@ -1,13 +1,15 @@
 package integration
 
 import com.example.module
+import com.example.modules.address.model.Addresses
 import com.example.modules.address.model.CreateAddressDTO
 import com.example.modules.customer.model.CreateCustomerDTO
+import com.example.modules.customer.model.Customers
 import com.example.modules.inventory.model.CreateInventoryDTO
-import com.example.modules.order.model.CreateOrderDTO
-import com.example.modules.order.model.Order
-import com.example.modules.order.model.ProductQty
+import com.example.modules.inventory.model.Inventories
+import com.example.modules.order.model.*
 import com.example.modules.product.model.CreateProductDTO
+import com.example.modules.product.model.Products
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -22,6 +24,8 @@ import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.sql.Schema
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.After
 import org.junit.Before
@@ -44,40 +48,17 @@ class IntegrationCreateOrderTest {
 
     @Before
     fun setUp(): Unit = withTestApplication({module()}) {
-        runBlocking {
-            val addressDTO = CreateAddressDTO(city = "Cordoba", road = "San Martin", number = 10)
-            val product1 = CreateProductDTO(2.2, "banana")
-            val product2 = CreateProductDTO(3.5, "apple")
-            val customer = CreateCustomerDTO("Tistaaaa")
+        System.setProperty("env", "test")
+    }
 
-            handleRequest(HttpMethod.Post, "/address") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(Json.encodeToString(addressDTO))
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-            }
-
-            handleRequest(HttpMethod.Post, "/product") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(Json.encodeToString(product1))
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-            }
-
-            handleRequest(HttpMethod.Post, "/product") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(Json.encodeToString(product2))
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-            }
-
-            handleRequest(HttpMethod.Post, "/customer") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(Json.encodeToString(customer))
-            }.apply {
-                assertEquals(HttpStatusCode.OK , response.status())
+    @After
+    fun tearDown(): Unit = withTestApplication({ module() }) {
+        if (System.getProperty("env") == "test") {
+            transaction {
+                SchemaUtils.drop(Addresses, Customers, Orders, Products, OrdersProducts, Inventories)
             }
         }
+        System.clearProperty("env")
     }
 
     @Test
@@ -139,6 +120,9 @@ class IntegrationCreateOrderTest {
     @Test
     fun test004_createAnOrder(): Unit = withTestApplication({module()}) {
         runBlocking {
+            val product1 = CreateProductDTO(2.2, "banana")
+            val product2 = CreateProductDTO(3.5, "apple")
+            val customer = CreateCustomerDTO("Tistaaaa")
             val driver = """{
                    "name": "TistaDriver"
             }"""
@@ -147,14 +131,48 @@ class IntegrationCreateOrderTest {
                 setBody(driver)
             }
 
-            val orderDto = """{
-                "addressId": 1   
-            }"""
-            val res = cl.post("http://localhost:8081/delivery") { //creates a delivery
-                contentType(ContentType.Application.Json)
-                setBody(orderDto)
+            handleRequest(HttpMethod.Post, "/product") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(Json.encodeToString(product1))
             }
-            assertEquals(res.status, HttpStatusCode.OK)
+
+            handleRequest(HttpMethod.Post, "/product") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(Json.encodeToString(product2))
+            }
+
+            handleRequest(HttpMethod.Post, "/customer") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(Json.encodeToString(customer))
+            }
+
+            val createOrderDTO = CreateOrderDTO(
+                listOf(ProductQty(1, 2), ProductQty(2, 3)),
+                1,
+                1
+            )
+
+            val addressDTO = CreateAddressDTO(city = "Cordoba", road = "San Martin", number = 10)
+
+            handleRequest(HttpMethod.Post, "/address") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(Json.encodeToString(addressDTO))
+            }
+
+            handleRequest(HttpMethod.Post, "/order") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(Json.encodeToString(createOrderDTO))
+            }
+
+            val delivery = cl.get("http://localhost:8081/delivery/1")
+            assertNotNull(delivery)
+            val content = delivery.bodyAsText()
+            assert(content.contains("1"))
+            assert(content.contains("PENDING"))
+
+            transaction {
+                SchemaUtils.drop()
+            }
         }
     }
 }
