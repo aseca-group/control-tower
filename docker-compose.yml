@@ -20,6 +20,8 @@ services:
       - h2-data:/opt/h2-data
     networks:
       - some-net
+    environment:
+      DELIVERY_SERVICE_URL: http://last-mile-planning-back-app-1:8081/delivery
 
   master:
     image: locustio/locust
