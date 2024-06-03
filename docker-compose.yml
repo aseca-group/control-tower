@@ -11,6 +11,11 @@ services:
       - control-tower-database
     networks:
       - some-net
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1GB
 
   control-tower-database:
     image: oscarfonts/h2

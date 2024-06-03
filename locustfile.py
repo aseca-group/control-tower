@@ -5,6 +5,7 @@ base_path = "http://control-tower-control-tower-1:8080"
 
 
 class Client(HttpUser):
+    weight = 40
     wait_time = between(1, 5)
     address_id = None
     customer_id = None
@@ -35,6 +36,7 @@ class Client(HttpUser):
 
 
 class StoreAdmin(HttpUser):
+    weight = 5
     wait_time = between(1, 5)
     product_ids = []
     inventory_ids = []
@@ -50,6 +52,7 @@ class StoreAdmin(HttpUser):
 
 
 class ControlTowerCoordinator(HttpUser):
+    weight = 5
     wait_time = between(1, 5)
 
     @task
