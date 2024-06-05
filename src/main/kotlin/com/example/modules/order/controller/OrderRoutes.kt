@@ -29,7 +29,7 @@ fun Route.order() {
         post {
             val order = call.receive<CreateOrderDTO>()
             val total = orderService.getTotal(order)
-            if (orderDao.checkStockAvailability(order.productsId)) {
+            if (!orderDao.checkStockAvailability(order.productsId)) {
                 call.respond(HttpStatusCode.BadRequest, "Not enough stock available")
                 return@post
             }
