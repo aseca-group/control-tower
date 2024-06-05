@@ -37,7 +37,7 @@ class OrderDAOFacadeImpl : OrderDAOFacade {
         )
     }
 
-    private suspend fun checkStockAvailability(products: List<ProductQty>): Boolean {
+    suspend fun checkStockAvailability(products: List<ProductQty>): Boolean {
         // Convertir la lista de productos a un conjunto de IDs para la consulta
         val productIds = products.map { it.productId }.toSet()
 

@@ -29,6 +29,10 @@ fun Route.order() {
         post {
             val order = call.receive<CreateOrderDTO>()
             val total = orderService.getTotal(order)
+            if (orderDao.checkStockAvailability(order.productsId)) {
+                call.respond(HttpStatusCode.BadRequest, "Not enough stock available")
+                return@post
+            }
             val deliveryId = runBlocking { clientService.getDeliveryId(order.addressId) }
             val createdOrder = orderDao.addNewOrder(order, deliveryId, total)
             call.respondRedirect("/order/${createdOrder?.id}")
