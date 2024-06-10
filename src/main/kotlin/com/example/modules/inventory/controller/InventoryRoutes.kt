@@ -18,6 +18,11 @@ import io.ktor.server.routing.*
 fun Route.inventory() {
     route("inventory") {
         // funciona
+        get("/") {
+            call.respond(inventoryDao.allInventories())
+        }
+
+        // funciona
         post {
             val inventory = call.receive<CreateInventoryDTO>()
             val createdInventory = inventoryDao.addNewInventory(inventory)
@@ -26,11 +31,6 @@ fun Route.inventory() {
             } else {
                 call.respond(HttpStatusCode.BadRequest, "Error: Product does not exists, thus inventory wasn't created.")
             }
-        }
-
-        // funciona
-        get("/") {
-            call.respond(inventoryDao.allInventories())
         }
 
         // funciona
