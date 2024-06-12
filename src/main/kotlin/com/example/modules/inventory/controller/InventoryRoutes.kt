@@ -18,6 +18,11 @@ import io.ktor.server.routing.*
 fun Route.inventory() {
     route("inventory") {
         // funciona
+        get("/") {
+            call.respond(inventoryDao.allInventories())
+        }
+
+        // funciona
         post {
             val inventory = call.receive<CreateInventoryDTO>()
             val createdInventory = inventoryDao.addNewInventory(inventory)
@@ -26,11 +31,6 @@ fun Route.inventory() {
             } else {
                 call.respond(HttpStatusCode.BadRequest, "Error: Product does not exists, thus inventory wasn't created.")
             }
-        }
-
-        // funciona
-        get("/") {
-            call.respond(inventoryDao.allInventories())
         }
 
         // funciona
@@ -63,6 +63,7 @@ fun Route.inventory() {
             }
         }
 
+        // funciona
         patch("/addStock") {
             val addStockDTO = call.receive<AddStockDTO>()
             if (addStockDTO.stockToAdd <= 0) {
@@ -77,6 +78,7 @@ fun Route.inventory() {
             }
         }
 
+        // funciona
         patch("/markAsReserved") {
             val markAsReservedDTO = call.receive<MarkAsReservedDTO>()
             if (markAsReservedDTO.stockToReserve <= 0) {
@@ -91,6 +93,7 @@ fun Route.inventory() {
             }
         }
 
+        // funciona
         patch("/unreserve") {
             val markAsUnreservedDTO = call.receive<MarkAsUnreservedDTO>()
             if (markAsUnreservedDTO.stockToUnreserve <= 0) {
@@ -105,6 +108,7 @@ fun Route.inventory() {
             }
         }
 
+        // funciona
         patch("/removeStock") {
             val removeStockDTO = call.receive<RemoveStockDTO>()
             if (removeStockDTO.stockToRemove <= 0) {
@@ -119,11 +123,15 @@ fun Route.inventory() {
             }
         }
 
+        // funciona
         patch("/removeReservedStock") {
             val removeReservedStockDTO = call.receive<RemoveReservedStockDTO>()
             val updatedInventories = inventoryDao.removeReservedStock(removeReservedStockDTO)
             if (updatedInventories.isNotEmpty()) {
-                call.respond(HttpStatusCode.OK, updatedInventories.map { "Product ID: ${it.productId}, Updated reserved stock: ${it.reservedStock}" })
+                call.respond(
+                    HttpStatusCode.OK,
+                    updatedInventories.map { "Product ID: ${it.productId}, Updated reserved stock: ${it.reservedStock}" },
+                )
             } else {
                 call.respond(HttpStatusCode.BadRequest, "Error: Reserved stock could not be removed.")
             }
