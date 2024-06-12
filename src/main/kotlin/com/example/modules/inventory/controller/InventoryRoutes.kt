@@ -18,13 +18,11 @@ import io.ktor.server.routing.*
 fun Route.inventory() {
     route("inventory") {
         // funciona
-        // to do
         get("/") {
             call.respond(inventoryDao.allInventories())
         }
 
         // funciona
-        // tdd
         post {
             val inventory = call.receive<CreateInventoryDTO>()
             val createdInventory = inventoryDao.addNewInventory(inventory)
@@ -36,7 +34,6 @@ fun Route.inventory() {
         }
 
         // funciona
-        // tdd
         get("/{productId}") {
             val productId = call.parameters["productId"]?.toIntOrNull()
             if (productId == null) {
@@ -52,7 +49,6 @@ fun Route.inventory() {
         }
 
         // funciona
-        // tdd
         delete("/delete/{productId}") {
             val productId = call.parameters["productId"]?.toIntOrNull()
             if (productId == null) {
@@ -68,7 +64,6 @@ fun Route.inventory() {
         }
 
         // funciona
-        // tdd
         patch("/addStock") {
             val addStockDTO = call.receive<AddStockDTO>()
             if (addStockDTO.stockToAdd <= 0) {
@@ -114,7 +109,6 @@ fun Route.inventory() {
         }
 
         // funciona
-        // tdd
         patch("/removeStock") {
             val removeStockDTO = call.receive<RemoveStockDTO>()
             if (removeStockDTO.stockToRemove <= 0) {
@@ -130,7 +124,6 @@ fun Route.inventory() {
         }
 
         // funciona
-        // to do
         patch("/removeReservedStock") {
             val removeReservedStockDTO = call.receive<RemoveReservedStockDTO>()
             val updatedInventories = inventoryDao.removeReservedStock(removeReservedStockDTO)
