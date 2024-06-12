@@ -1,8 +1,8 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package endpoint
 
-import com.example.modules.address.dao.addressDao
 import com.example.modules.address.model.Addresses
-import com.example.modules.address.model.CreateAddressDTO
 import com.example.modules.customer.dao.customerDao
 import com.example.modules.customer.model.CreateCustomerDTO
 import com.example.modules.customer.model.Customer
@@ -26,7 +26,6 @@ import org.junit.Before
 import kotlin.test.*
 
 class CustomerEndpointTest {
-
     @Before
     fun init() {
         val driverClassName = "org.h2.Driver"
@@ -39,37 +38,42 @@ class CustomerEndpointTest {
     }
 
     @Test
-    fun testPostCustomer() = testApplication {
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
+    fun testPostCustomer() =
+        testApplication {
+            val client =
+                createClient {
+                    install(ContentNegotiation) {
+                        json()
+                    }
+                }
+            val response =
+                client.post("/customer") {
+                    contentType(ContentType.Application.Json)
+                    setBody(CreateCustomerDTO("Pipo Gorosito"))
+                }
+            val customer = Json.decodeFromString<Customer>(response.bodyAsText())
+            TestCase.assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("Pipo Gorosito", customer.name)
         }
-        val response = client.post("/customer") {
-            contentType(ContentType.Application.Json)
-            setBody(CreateCustomerDTO("Pipo Gorosito"))
-        }
-        val customer = Json.decodeFromString<Customer>(response.bodyAsText())
-        TestCase.assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("Pipo Gorosito", customer.name)
-    }
 
     @Test
-    fun testGetCustomer() = testApplication {
-        customerDao.addNewCustomer(CreateCustomerDTO("Pipo Gorosito"))
+    fun testGetCustomer() =
+        testApplication {
+            customerDao.addNewCustomer(CreateCustomerDTO("Pipo Gorosito"))
 
-        val response = client.get("/customer/1")
-        TestCase.assertEquals(HttpStatusCode.OK, response.status)
-        val customer = Json.decodeFromString<Customer>(response.bodyAsText())
-        assertEquals("Pipo Gorosito", customer.name)
-    }
+            val response = client.get("/customer/1")
+            TestCase.assertEquals(HttpStatusCode.OK, response.status)
+            val customer = Json.decodeFromString<Customer>(response.bodyAsText())
+            assertEquals("Pipo Gorosito", customer.name)
+        }
 
     @Test
-    fun testDeleteCustomer() = testApplication {
-        customerDao.addNewCustomer(CreateCustomerDTO("Pipo Gorosito"))
-        val response = client.delete("/customer/1")
+    fun testDeleteCustomer() =
+        testApplication {
+            customerDao.addNewCustomer(CreateCustomerDTO("Pipo Gorosito"))
+            val response = client.delete("/customer/1")
 
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("Customer 1 deleted", response.bodyAsText())
-    }
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("Customer 1 deleted", response.bodyAsText())
+        }
 }

@@ -25,6 +25,7 @@ import com.example.modules.order.model.ProductQty
 import com.example.modules.product.dao.productDao
 import com.example.modules.product.model.CreateProductDTO
 import com.example.modules.product.model.Products
+import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -51,18 +52,21 @@ class InventoryEndpointTest {
         }
     }
 
+    private fun ApplicationTestBuilder.httpClient(): HttpClient {
+        val client =
+            createClient {
+                install(ContentNegotiation) {
+                    json()
+                }
+            }
+        return client
+    }
+
     @Test
     fun testPostInventory() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
-
             var response = ""
             val postInventory =
                 client.post("/inventory") {
@@ -73,7 +77,6 @@ class InventoryEndpointTest {
                     assertEquals("/inventory/1", headers[HttpHeaders.Location])
                     response = client.get(headers[HttpHeaders.Location].toString()).bodyAsText()
                 }
-
             val inventory = Json.decodeFromString<Inventory>(response)
             assertEquals(1, inventory.productId)
             assertEquals(200, inventory.stock)
@@ -83,19 +86,12 @@ class InventoryEndpointTest {
     @Test
     fun testPostInventoryWhenNoProduct() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             val postInventory =
                 client.post("/inventory") {
                     contentType(ContentType.Application.Json)
                     setBody(CreateInventoryDTO(1, 200))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, postInventory.status)
             assertEquals("Error: Product does not exists, thus inventory wasn't created.", postInventory.bodyAsText())
         }
@@ -103,15 +99,8 @@ class InventoryEndpointTest {
     @Test
     fun testPostNegativeInventory() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
-
             var response = ""
             val postInventory =
                 client.post("/inventory") {
@@ -122,7 +111,6 @@ class InventoryEndpointTest {
                     assertEquals("/inventory/1", headers[HttpHeaders.Location])
                     response = client.get(headers[HttpHeaders.Location].toString()).bodyAsText()
                 }
-
             val inventory = Json.decodeFromString<Inventory>(response)
             assertEquals(1, inventory.productId)
             assertEquals(0, inventory.stock)
@@ -134,7 +122,6 @@ class InventoryEndpointTest {
         testApplication {
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val response = client.get("/inventory/1")
             TestCase.assertEquals(HttpStatusCode.OK, response.status)
             val inventory = Json.decodeFromString<Inventory>(response.bodyAsText())
@@ -152,7 +139,6 @@ class InventoryEndpointTest {
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
             inventoryDao.addNewInventory(CreateInventoryDTO(2, 200))
             inventoryDao.addNewInventory(CreateInventoryDTO(3, 200))
-
             val response = client.get("/inventory/")
             val inventories = Json.decodeFromString<List<Inventory>>(response.bodyAsText())
             assertEquals(3, inventories.size)
@@ -162,22 +148,14 @@ class InventoryEndpointTest {
     @Test
     fun testAddStockWhenInventoryExists() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val response =
                 client.patch("/inventory/addStock") {
                     contentType(ContentType.Application.Json)
                     setBody(AddStockDTO(1, 200))
                 }
-
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("Updated stock amount: 400", response.bodyAsText())
         }
@@ -185,21 +163,13 @@ class InventoryEndpointTest {
     @Test
     fun testAddStockWhenInventoryDoesntExist() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
-
             val response =
                 client.patch("/inventory/addStock") {
                     contentType(ContentType.Application.Json)
                     setBody(AddStockDTO(1, 200))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertEquals("Error: Failed to add stock.", response.bodyAsText())
         }
@@ -207,22 +177,14 @@ class InventoryEndpointTest {
     @Test
     fun testAddNegativeStock() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val response =
                 client.patch("/inventory/addStock") {
                     contentType(ContentType.Application.Json)
                     setBody(AddStockDTO(1, -200))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertEquals("Error: Stock to add must be a positive number.", response.bodyAsText())
         }
@@ -230,22 +192,14 @@ class InventoryEndpointTest {
     @Test
     fun testAddZeroStock() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val response =
                 client.patch("/inventory/addStock") {
                     contentType(ContentType.Application.Json)
                     setBody(AddStockDTO(1, -200))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertEquals("Error: Stock to add must be a positive number.", response.bodyAsText())
         }
@@ -253,19 +207,11 @@ class InventoryEndpointTest {
     @Test
     fun testDeleteInventory() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val response =
                 client.delete("/inventory/delete/1")
-
             assertEquals(HttpStatusCode.OK, response.status)
         }
     }
@@ -273,18 +219,10 @@ class InventoryEndpointTest {
     @Test
     fun testDeleteNonExistentInventory() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
-
             val response =
                 client.delete("/inventory/delete/1")
-
             assertEquals(HttpStatusCode.NotFound, response.status)
             assertEquals("Error: inventory not found.", response.bodyAsText())
         }
@@ -293,21 +231,13 @@ class InventoryEndpointTest {
     @Test
     fun testDeleteWhenHavingMultipleInventories() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays normales"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
             inventoryDao.addNewInventory(CreateInventoryDTO(2, 200))
-
             val response =
                 client.delete("/inventory/delete/2")
-
             assertEquals(HttpStatusCode.OK, response.status)
         }
     }
@@ -315,15 +245,8 @@ class InventoryEndpointTest {
     @Test
     fun testDeleteWithoutID() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             val response = client.delete("/inventory/delete/abc")
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertEquals("Error: invalid id.", response.bodyAsText())
         }
@@ -332,22 +255,14 @@ class InventoryEndpointTest {
     @Test
     fun testRemoveAllStock() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val response =
                 client.patch("/inventory/removeStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveStockDTO(1, 200))
                 }
-
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("Updated stock amount: 0", response.bodyAsText())
         }
@@ -356,22 +271,14 @@ class InventoryEndpointTest {
     @Test
     fun removeHalfTheStock() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val response =
                 client.patch("/inventory/removeStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveStockDTO(1, 100))
                 }
-
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("Updated stock amount: 100", response.bodyAsText())
         }
@@ -380,22 +287,14 @@ class InventoryEndpointTest {
     @Test
     fun removeNegativeAmountOfStock() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val response =
                 client.patch("/inventory/removeStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveStockDTO(1, -100))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertEquals("Error: Stock to remove must be a positive number.", response.bodyAsText())
         }
@@ -404,22 +303,14 @@ class InventoryEndpointTest {
     @Test
     fun removeZeroStock() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val response =
                 client.patch("/inventory/removeStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveStockDTO(1, 0))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertEquals("Error: Stock to remove must be a positive number.", response.bodyAsText())
         }
@@ -428,19 +319,12 @@ class InventoryEndpointTest {
     @Test
     fun removeStockFromInvalidID() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             val response =
                 client.patch("/inventory/removeStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveStockDTO(1, 200))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertEquals("Error: Stock could not be removed.", response.bodyAsText())
         }
@@ -449,22 +333,14 @@ class InventoryEndpointTest {
     @Test
     fun removeMoreStockThanExisting() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val response =
                 client.patch("/inventory/removeStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveStockDTO(1, 300))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertEquals("Error: Stock could not be removed.", response.bodyAsText())
         }
@@ -473,24 +349,15 @@ class InventoryEndpointTest {
     @Test
     fun testMarkStockAsReservedWhenStockAvailable() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
-
             val num = 10
-
             val response =
                 client.patch("/inventory/markAsReserved") {
                     contentType(ContentType.Application.Json)
                     setBody(MarkAsReservedDTO(1, num))
                 }
-
             assertEquals("Updated reserved stock amount: $num", response.bodyAsText())
             assertEquals(HttpStatusCode.OK, response.status)
         }
@@ -498,48 +365,31 @@ class InventoryEndpointTest {
     @Test
     fun testMarkStockAsReservedWhenNoStockAvailable() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 0))
-
             val response =
                 client.patch("/inventory/markAsReserved") {
                     contentType(ContentType.Application.Json)
                     setBody(MarkAsReservedDTO(1, 10))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
         }
 
     @Test
     fun testMarkStockAsUnreserved() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             val resStock = 100
             val unRes = 10
-
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 1000))
             inventoryDao.markAsReserved(MarkAsReservedDTO(1, resStock))
-
             val response =
                 client.patch("/inventory/unreserve") {
                     contentType(ContentType.Application.Json)
                     setBody(MarkAsUnreservedDTO(1, unRes))
                 }
-
             assertEquals("Updated reserved stock amount: " + (resStock - unRes), response.bodyAsText())
             assertEquals(HttpStatusCode.OK, response.status)
         }
@@ -547,49 +397,32 @@ class InventoryEndpointTest {
     @Test
     fun testMarkStockAsUnreservedWhenNoStockReserved() =
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             val resStock = 0
             val unRes = 10
-
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 1000))
             inventoryDao.markAsReserved(MarkAsReservedDTO(1, resStock))
-
             val response =
                 client.patch("/inventory/unreserve") {
                     contentType(ContentType.Application.Json)
                     setBody(MarkAsUnreservedDTO(1, unRes))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
         }
 
     @Test
     fun removeStockWhenReservedSuccess() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
             inventoryDao.markAsReserved(MarkAsReservedDTO(1, 100))
-
             val response =
                 client.patch("/inventory/removeStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveStockDTO(1, 100))
                 }
-
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("Updated stock amount: 100", response.bodyAsText())
         }
@@ -598,23 +431,15 @@ class InventoryEndpointTest {
     @Test
     fun removeStockWhenReservedFail() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 200))
             inventoryDao.markAsReserved(MarkAsReservedDTO(1, 100))
-
             val response =
                 client.patch("/inventory/removeStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveStockDTO(1, 200))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertEquals("Error: Stock could not be removed.", response.bodyAsText())
         }
@@ -623,26 +448,18 @@ class InventoryEndpointTest {
     @Test
     fun removeReservedStock() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 1000))
             val productList = listOf(ProductQty(1, 10))
             addressDao.addNewAddress(CreateAddressDTO("Miami", "Messi avenue", 12345))
             customerDao.addNewCustomer(CreateCustomerDTO("Leonel Messi"))
             orderDao.addNewOrder(CreateOrderDTO(productList, 1, 1), 1, 100.0)
-
             val response =
                 client.patch("/inventory/removeReservedStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveReservedStockDTO(1))
                 }
-
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("[\"Product ID: 1, Updated reserved stock: 0\"]", response.bodyAsText())
         }
@@ -651,19 +468,12 @@ class InventoryEndpointTest {
     @Test
     fun removeReservedStockWhenNoOrder() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             val response =
                 client.patch("/inventory/removeReservedStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveReservedStockDTO(1))
                 }
-
             assertEquals(HttpStatusCode.BadRequest, response.status)
             assertEquals("Error: Reserved stock could not be removed.", response.bodyAsText())
         }
@@ -672,13 +482,7 @@ class InventoryEndpointTest {
     @Test
     fun removeReservedStockFromMultipleInventories() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays normales"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 1000))
@@ -687,13 +491,11 @@ class InventoryEndpointTest {
             addressDao.addNewAddress(CreateAddressDTO("Miami", "Messi avenue", 12345))
             customerDao.addNewCustomer(CreateCustomerDTO("Leonel Messi"))
             orderDao.addNewOrder(CreateOrderDTO(productList, 1, 1), 1, 200.0)
-
             val response =
                 client.patch("/inventory/removeReservedStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveReservedStockDTO(1))
                 }
-
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals(
                 "[\"Product ID: 1, Updated reserved stock: 0\",\"Product ID: 2, Updated reserved stock: 0\"]",
@@ -705,13 +507,7 @@ class InventoryEndpointTest {
     @Test
     fun removeReservedStockWhenThereIsMultipleOrders() {
         testApplication {
-            val client =
-                createClient {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                }
-
+            val client = httpClient()
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
             productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays normales"))
             inventoryDao.addNewInventory(CreateInventoryDTO(1, 1000))
@@ -721,13 +517,11 @@ class InventoryEndpointTest {
             customerDao.addNewCustomer(CreateCustomerDTO("Leonel Messi"))
             orderDao.addNewOrder(CreateOrderDTO(productList, 1, 1), 1, 200.0)
             orderDao.addNewOrder(CreateOrderDTO(productList, 1, 1), 2, 200.0)
-
             val response =
                 client.patch("/inventory/removeReservedStock") {
                     contentType(ContentType.Application.Json)
                     setBody(RemoveReservedStockDTO(2))
                 }
-
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals(
                 "[\"Product ID: 1, Updated reserved stock: 10\",\"Product ID: 2, Updated reserved stock: 10\"]",
