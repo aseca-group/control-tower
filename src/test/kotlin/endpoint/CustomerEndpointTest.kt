@@ -1,6 +1,8 @@
 package endpoint
 
+import com.example.modules.address.dao.addressDao
 import com.example.modules.address.model.Addresses
+import com.example.modules.address.model.CreateAddressDTO
 import com.example.modules.customer.dao.customerDao
 import com.example.modules.customer.model.CreateCustomerDTO
 import com.example.modules.customer.model.Customer
@@ -53,12 +55,21 @@ class CustomerEndpointTest {
     }
 
     @Test
-    fun testGetAddress() = testApplication {
+    fun testGetCustomer() = testApplication {
         customerDao.addNewCustomer(CreateCustomerDTO("Pipo Gorosito"))
 
         val response = client.get("/customer/1")
         TestCase.assertEquals(HttpStatusCode.OK, response.status)
         val customer = Json.decodeFromString<Customer>(response.bodyAsText())
         assertEquals("Pipo Gorosito", customer.name)
+    }
+
+    @Test
+    fun testDeleteCustomer() = testApplication {
+        customerDao.addNewCustomer(CreateCustomerDTO("Pipo Gorosito"))
+        val response = client.delete("/customer/1")
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("Customer 1 deleted", response.bodyAsText())
     }
 }

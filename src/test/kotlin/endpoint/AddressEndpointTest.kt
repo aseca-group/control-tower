@@ -37,7 +37,7 @@ class AddressEndpointTest {
     }
 
     @Test
-    fun testPostAddresss() = testApplication {
+    fun testPostAddress() = testApplication {
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -64,5 +64,15 @@ class AddressEndpointTest {
         assertEquals("Buenos Aires", address.city)
         assertEquals("Av. del Libertador", address.road)
         assertEquals(233, address.number)
+    }
+
+    @Test
+    fun testDeleteAddress() = testApplication {
+        addressDao.addNewAddress(CreateAddressDTO("Buenos Aires", "Av. del Libertador", 233))
+
+        val response = client.delete("/address/1")
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("Address 1 deleted", response.bodyAsText())
     }
 }

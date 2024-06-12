@@ -57,7 +57,7 @@ class ProductEndpointTest {
     }
 
     @Test
-    fun testGetAddress() = testApplication {
+    fun testGetProduct() = testApplication {
         productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
 
         val response = client.get("/product/1")
@@ -66,5 +66,15 @@ class ProductEndpointTest {
         TestCase.assertEquals(HttpStatusCode.OK, response.status)
         assertEquals("Papas Lays Messi", product.name)
         assertEquals(10.0, product.price)
+    }
+
+
+    @Test
+    fun testDeleteProduct() = testApplication {
+        productDao.addNewProduct(CreateProductDTO(10.0, "Papas Lays Messi"))
+        val response = client.delete("/product/1")
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("Product 1 deleted", response.bodyAsText())
     }
 }
