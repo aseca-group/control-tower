@@ -50,4 +50,5 @@ class AddressDAOImpl : AddressDAOFacade {
         }
 }
 
+//Use this instance to interact with dao
 val addressDao: AddressDAOImpl = AddressDAOImpl()
