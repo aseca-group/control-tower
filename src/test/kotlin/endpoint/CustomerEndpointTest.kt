@@ -68,6 +68,22 @@ class CustomerEndpointTest {
         }
 
     @Test
+    fun testGetNotExistingCustomer() =
+        testApplication {
+            val response = client.get("/customer/1")
+            TestCase.assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("Customer not found", response.bodyAsText())
+        }
+
+    @Test
+    fun testGetCustomerWithInvalidID() =
+        testApplication {
+            val response = client.get("/customer/invalid")
+            TestCase.assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("Invalid ID", response.bodyAsText())
+        }
+
+    @Test
     fun testDeleteCustomer() =
         testApplication {
             customerDao.addNewCustomer(CreateCustomerDTO("Pipo Gorosito"))
@@ -75,5 +91,48 @@ class CustomerEndpointTest {
 
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("Customer 1 deleted", response.bodyAsText())
+        }
+
+    @Test
+    fun testDeleteCustomerThatDoesNotExist() =
+        testApplication {
+            val response = client.delete("/customer/1")
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("Customer not found", response.bodyAsText())
+        }
+
+    @Test
+    fun testDeleteCustomerWithInvalidID() =
+        testApplication {
+            val response = client.delete("/customer/invalid")
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("Invalid ID", response.bodyAsText())
+        }
+
+    @Test
+    fun testGetAllCustomer() =
+        testApplication {
+            customerDao.addNewCustomer(CreateCustomerDTO("Pipo Gorosito"))
+            val response = client.get("/customer")
+            assertEquals(HttpStatusCode.OK, response.status)
+        }
+
+    @Test
+    fun testGetAllCustomers() =
+        testApplication {
+            customerDao.addNewCustomer(CreateCustomerDTO("Pipo Gorosito"))
+            customerDao.addNewCustomer(CreateCustomerDTO("Coco Basile"))
+
+            val response = client.get("/customer")
+            assertEquals(HttpStatusCode.OK, response.status)
+        }
+
+    @Test
+    fun testGetAllCustomersWhenNoneExists() =
+        testApplication {
+            val response = client.get("/customer")
+            assertEquals(HttpStatusCode.OK, response.status)
         }
 }
